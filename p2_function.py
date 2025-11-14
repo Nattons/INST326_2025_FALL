@@ -92,7 +92,16 @@ def move_ship(ship, direction, other_ship):
     #Valid direction
     return new_ship, "Ship moved successfully!"
 
-    
+# Jishan winner function
+def check_winner(opponent_ships, hits):
+    """Return True if all opponent ships are sunk."""
+    for ship in opponent_ships:
+        if not all(pos in hits for pos in ship):
+            return False
+    return True    
+
+
+
 
 
 #Test in Terminal 
