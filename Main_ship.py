@@ -163,72 +163,107 @@ while True:
 #-------------------------------------------------------------------------
 #Endrias
 
-def check_grid(player_input, used_space=None, enemy_ships=None, board_size = 5):
-    
+def validate_input(player_input, board_size=5):
     """
-    The code will attempt to check if the player is making a valid move
-    Purpose of the code:
-    Checks if the grid is used, availalbe, or hit/miss.
-    
+    Validates a coordinate input like '2,3' and converts it to (row, col).
+    Ensures the input is properly formatted and inside the 5x5 board.
+
     Args:
-        player_input (str): The input coordinates entered by the player
-                    ex.include ("A3,C1,E5")
-        used_space (set): A set a tuples for row and column for 
-                            already played moves.
-        enemy_ships (set): A tuples for the location of the enemy ships 
+        player_input (str): The coordinate typed by the player (ex: '2,3')
+        board_size (int): Size of the board (default 5)
 
     Returns:
-        tuple or None: The (row, col) index if the move 
-        is valid, otherwise None.
+        tuple or None: (row, col) if valid, otherwise None.
     """
-    used_space = set() if used_space is None else used_space
-    enemy_ships = set() if enemy_ships is None else enemy_ships
-        
-    letters = ['A', 'B', 'C', 'D', 'E']
-    
 
     if not player_input:
-        print("For example, enter something like A3 or E5.")
+        print("Enter a coordinate like 2,3.")
         return None
+
+    move = player_input.replace(" ", "")
+
+    # Must contain a comma
+    if "," not in move:
+        print("Invalid format. Use x,y like 2,3.")
+        return None
+
+    parts = move.split(",")
+
+    # Must have two numbers
+    if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit():
+        print("Invalid format. Coordinates must be numbers (0–4).")
+        return None
+
+    x = int(parts[0])
+    y = int(parts[1])
+
+    # Check board boundaries
+    if not (0 <= x < board_size and 0 <= y < board_size):
+        print("Out of bounds. Coordinates must be between 0 and 4.")
+        return None
+
+    # Convert to (row, col)
+    return (y, x)
+
+
+def is_repeated_move(coords, used_space):
+    """
+    Check if the coordinate was already entered.
     
-    move = player_input.strip().upper()
+    Args:
+        coords (tuple): The (row, col) coordinate
+        used_space (set): All previously guessed coordinates
 
-    # split it into column and row
-    col = move[0]
-    if len(move) < 2 or col not in letters or not move[1:].isdigit():
-        print("The formate is Invalid. Use A–E and 1–5.")
+    Returns:
+        bool: True if coordinate already used, else False.
+    """
+    return coords in used_space
+
+
+def check_grid(player_input, used_space=None, enemy_ships=None, board_size=5):
+    """
+    Checks if a move is valid, new, and determines hit or miss.
+
+    Args:
+        player_input (str): The x,y coordinate input by the player
+        used_space (set): Coordinates already guessed
+        enemy_ships (set): Enemy ship positions
+
+    Returns:
+        tuple or None: Valid (row, col) coordinate or None if invalid
+    """
+
+    used_space = set() if used_space is None else used_space
+    enemy_ships = set() if enemy_ships is None else enemy_ships
+
+    coords = validate_input(player_input, board_size)
+
+    if coords is None:
+        return None  # Input invalid
+
+    # Check duplicate move
+    if is_repeated_move(coords, used_space):
+        print("You already played that coordinate.")
         return None
 
-    row = int(move[1:]) - 1
-    col_index = letters.index(col)
+    # Record move
+    used_space.add(coords)
 
-    # checking bounds
-    if row < 0 or row >= board_size:
-        print("You are out of bounds, row is betweem 1 and 5")
-        return None
+    row, col = coords
 
-    # checking if the space is already used
-    if (row, col_index) in used_space:
-        print("You have played this move already")
-        return None
-
-    # record move played
-    used_space.add((row, col_index))
-
-    # checking for hits
-    if (row, col_index) not in enemy_ships:
-        print(f"You missed, better luck next time {col}{row + 1}.")
+    # Hit or miss logic
+    if coords in enemy_ships:
+        print(f"HIT at ({col},{row})!")
     else:
-        print(f" Hit!!! you just hit opponent ship {col}{row + 1}.")
+        print(f"Miss at ({col},{row}).")
 
-    # Shows the player past moves
+    # Show full move history
     print("\nPrevious moves:")
     for (r, c) in sorted(used_space):
-        print(f"{letters[c]}{r + 1}", end=" ")
+        print(f"({c},{r})", end=" ")
     print("\n")
 
-
-    return (row, col_index)
+    return coords
   #---------------------------------------------------------------------------
 #Anzhi
 
