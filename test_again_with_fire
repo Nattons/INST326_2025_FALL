@@ -1,0 +1,327 @@
+import random
+
+BOARD_SIZE = 5
+
+
+def parse_input_to_coord(input_str):
+   
+    input_str = input_str.replace(",", " ")
+    parts = input_str.split()
+    if len(parts) != 2:
+        return None
+    try:
+        row = int(parts[0])
+        col = int(parts[1])
+        return (row, col)
+    except ValueError:
+        return None
+
+
+def in_bounds(coord, size=BOARD_SIZE):
+   
+    r, c = coord
+    return 0 <= r < size
+
+
+def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
+    
+
+    while True:
+        user_input = input("Enter coordinate to fire (row col), e.g. 0 1: ").strip()
+        coord = parse_input_to_coord(user_input)
+
+        if coord is None:
+            print("Invalid format! Use: row col  for example  1 3")
+            continue
+
+        if not in_bounds(coord, board_size):
+            print("Out of bounds! Please enter a value between 0 and 4.")
+            continue
+
+        if coord in used_space:
+            print("You already fired here. Choose another spot.")
+            continue
+
+   
+        break
+
+    used_space.add(coord)
+
+   
+    hit_any = False
+    sunk_ship = False
+
+    for ship in enemy_ships:
+        if coord in ship:
+            hit_any = True
+            hit_cells.add(coord)
+            
+            if all(cell in hit_cells for cell in ship):
+                sunk_ship = True
+            break
+
+    
+    if not hit_any:
+        print(f"{coord} → Miss")
+        return "miss", coord
+    elif sunk_ship:
+        print(f"{coord} → Hit! You sunk a ship!")
+        return "sunk", coord
+    else:
+        print(f"{coord} → Hit!")
+        return "hit", coord
+
+
+# Global Function for ship movement
+def move_ship(ship, direction, other_ship):
+    
+    if direction == "up":
+        new_ship = [(r-1, c) for r, c in ship]
+    elif direction == "down":
+        new_ship = [(r+1, c) for r, c in ship]
+    elif direction == "left":
+        new_ship = [(r, c-1) for r, c in ship]
+    elif direction == "right":
+        new_ship = [(r, c+1) for r, c in ship]
+    else: 
+        return ship, "Invalid Direction"
+    
+    # Checks for boundary of the grid
+    for r, c in new_ship:
+        if r < 0 or r > 4 or c < 0 or c > 4:
+            return ship, "Cannot Move!: reached the edge of board."
+   
+    # Checks collision with other ship
+    for pos in new_ship:
+        if pos in other_ship:
+            return ship, "Collision Imminent!: pick another direction."
+    
+    return new_ship, "Ship moved successfully!"
+
+
+class Board: 
+    
+    
+    def __init__(self, size=5):
+        
+        self.size = size
+        self.ship1 = []
+        self.ship2 = []
+        self.mines = []
+        self.lucky = None
+        self.occupied = set()
+        
+        
+    def get_avaliable_postions(self):
+      
+        all_coords = [(r, c) for r in range(self.size) for c in range(self.size)]
+        ships_coords = set(self.ship1 + self.ship2)
+        return [coord for coord in all_coords if coord not in ships_coords]
+     
+     
+    def validate_ship(self, start, direction, length):
+        
+        r, c = start 
+        
+   
+        if direction == "h":
+            if c + length - 1 >= self.size:
+                c = self.size - length 
+              
+           
+            while c >= 0:
+                cells = [(r, c + i) for i in range(length)]
+                if all(cell not in self.occupied for cell in cells):
+                    return cells
+                c -= 1
+            return None
+        
+        else:
+            if r + length - 1 >= self.size:
+                r = self.size - length
+
+            while r >= 0:
+                cells = [(r + i, c) for i in range(length)]
+                if all(cell not in self.occupied for cell in cells):
+                    return cells
+                r -= 1  
+            return None
+    
+    
+    def manual_place_ship(self, ship_name, length=2):
+        
+        print(f"\nPlace {ship_name}(length{length})")
+        
+        while True:
+            try: 
+                available = [(r, c) for r in range(self.size) for c in range(self.size)
+                             if (r, c) not in self.occupied]
+                print("Available coordiantes to place the ship:", available)
+                
+                r, c = map(int, input("Enter starting coordinate (row col): ").split())
+                direction = input("Direction (h for horizontal, v for vertical): ").lower()
+                if direction not in ("h", "v"):
+                    print("Invalid direction. Try again.")
+                    continue
+                
+                cells = self.validate_ship((r, c), direction, length)
+                if cells is None:
+                    print("Invalid placement. Try again.")
+                    continue
+                
+                # Place ship
+                self.occupied.update(cells)
+                print(f"{ship_name} placed at {cells}")
+                return cells
+            except ValueError:
+                print("Invalid input. Enter two numbers seperated by a space.")
+    
+
+    def place_mines(self, num_mines=2):
+       
+        while len(self.mines) < num_mines:
+            r = random.randint(0, self.size - 1)
+            c = random.randint(0, self.size - 1)
+            if (r, c) not in self.occupied:
+                self.mines.append((r, c))
+                self.occupied.add((r, c))
+                
+
+    def place_lucky(self):
+        
+        while True:
+            r = random.randint(0, self.size - 1)
+            c = random.randint(0, self.size - 1)
+            if (r, c) not in self.occupied:
+                self.lucky = (r, c)
+                self.occupied.add((r, c))
+                break
+    
+    
+class Player:
+   
+    def __init__(self, name):
+        
+        self.name = name
+        self.board = Board()
+    
+    
+    def setup(self):
+        
+        print(f"\n{self.name} Setup")
+        self.board.ship1 = self.board.manual_place_ship("Ship 1")
+        self.board.ship2 = self.board.manual_place_ship("Ship 2")
+        self.board.place_mines()
+        self.board.place_lucky()
+        print(f"{self.name}'s setup is complete! Sea Mines and Lucky Rest have been placed.")
+    
+    
+    def move_ship(self, ship_number, direction):
+        
+        if ship_number == 1:
+            current_ship = self.board.ship1
+            other_ship = self.board.ship2
+        else:
+            current_ship = self.board.ship2
+            other_ship = self.board.ship1
+        
+        new_ship, message = move_ship(current_ship, direction, other_ship)
+        
+        if "successfully" in message:
+            if ship_number == 1:
+                self.board.ship1 = new_ship
+            else:
+                self.board.ship2 = new_ship
+                
+        return new_ship, message
+    
+    
+class BattleshipGame:
+  
+    
+    
+    def __init__(self):
+        
+        self.player1 = Player("Player 1")
+        self.player2 = Player("Player 2")
+    
+    
+    def setup_game(self):
+ 
+        self.player1.setup()
+        self.player2.setup()
+    
+   
+    def play_turn(self, player):
+        
+        print(f"\n{player.name}'s Turn")
+        
+        for ship_number in [1, 2]:
+            while True:
+                direction = input(
+                    f"Enter direction to move ship{ship_number}(up, down, left, right) or 's' to skip: "
+                ).strip().lower()
+                
+                if direction == 's':
+                    print(f"Ship {ship_number} skipped")
+                    break
+                    
+                if direction not in ["up", "down", "left", "right"]:
+                    print("Invalid. Please type up, down, left, or right")
+                    continue 
+                
+                new_pos, message = player.move_ship(ship_number, direction)
+                
+                print(f"Ship 1 Position: {player.board.ship1}")
+                print(f"Ship 2 Position: {player.board.ship2}")
+                print(message)
+                
+                if "successfully" in message:
+                    break
+         
+
+if __name__ == "__main__":
+    """Runs the Battleship game in the terminal."""
+    
+    game = BattleshipGame()
+    game.setup_game()
+
+    # hit record
+    p1_used = set()   
+    p1_hits = set()   
+    p2_used = set()   
+    p2_hits = set()   
+    
+    players = [game.player1, game.player2]
+    turn = 0
+    
+    while True:
+        current_player = players[turn % 2]
+        enemy_player = players[(turn + 1) % 2]
+        
+        game.play_turn(current_player)
+        
+        print(f"{current_player.name} end of turn postions:")
+        print("Ship 1:", current_player.board.ship1)
+        print("Ship 2:", current_player.board.ship2)
+
+    
+        if current_player is game.player1:
+            used_space = p1_used
+            hit_cells = p1_hits
+            enemy_ships = [enemy_player.board.ship1, enemy_player.board.ship2]
+        else:
+            used_space = p2_used
+            hit_cells = p2_hits
+            enemy_ships = [enemy_player.board.ship1, enemy_player.board.ship2]
+
+        print(f"\n{current_player.name} firing at {enemy_player.name}!")
+        status, coord = fire(used_space, hit_cells, enemy_ships)
+
+       
+        cont = input("Continue game? (y/n): ").strip().lower()
+        if cont == 'n':
+            print("Game Exited.")
+            break
+
+        turn += 1
