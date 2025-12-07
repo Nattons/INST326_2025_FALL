@@ -105,24 +105,25 @@ def check_winner(opponent_ships, hits):
     return True    
 #------------------------------------
 #display function 
-def print_board(ships, mines, lucky, hits, size=5):
-    board = [["~" for _ in range(size)] for _ in range(size)]
+def print_board(ships, mines, lucky, hits, reveal=False):
+    board = [["~" for _ in range(5)] for _ in range(5)]
 
+    # Show hits
     for r, c in hits:
         board[r][c] = "X"
 
-    for ship in ships:
-        for r, c in ship:
-            board[r][c] = "S"
+    # Only reveal for debugging
+    if reveal:
+        for ship in ships:
+            for r, c in ship:
+                board[r][c] = "S"
+        for r, c in mines:
+            board[r][c] = "M"
+        lr, lc = lucky
+        board[lr][lc] = "L"
 
-    for r, c in mines:
-        board[r][c] = "M"
-
-    lr, lc = lucky
-    board[lr][lc] = "L"
-
-    print("\n     1 2 3 4 5")
-    for i in range(size):
+    print("\n   1 2 3 4 5")
+    for i in range(5):
         row_values = " ".join(board[i])
         print(f"{i+1} | {row_values}")
     print()
