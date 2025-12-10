@@ -20,7 +20,7 @@ def parse_input_to_coord(input_str):
 def in_bounds(coord, size=BOARD_SIZE):
    
     r, c = coord
-    return 0 <= r < size
+    return 0 <= r < size and 0 <= c < size
 
 
 def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
