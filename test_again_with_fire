@@ -3,6 +3,34 @@ import random
 BOARD_SIZE = 5
 
 
+def validate_ship_position(coord, board):
+    """
+    Ensures the player cannot place or move a ship:
+    - outside the board
+    - on top of another ship
+    - onto a previously hit cell
+    """
+
+    row, col = coord
+
+    # 1. Check bounds
+    if row < 0 or row >= board.size or col < 0 or col >= board.size:
+        print("Invalid: position is outside the board.")
+        return False
+
+    # 2. Check if space is already occupied by another ship
+    if coord in board.ship1 or coord in board.ship2:
+        print("Invalid: position already has a ship.")
+        return False
+
+    # 3. Check if the opponent already fired on this location
+    # (prevents moving onto a revealed space)
+    if hasattr(board, "hits_against_you") and coord in board.hits_against_you:
+        print("Invalid: your ship cannot move into a space already fired upon.")
+        return False
+
+    return True
+
 def parse_input_to_coord(input_str):
     input_str = input_str.replace(",", " ")
     parts = input_str.split()
@@ -152,6 +180,7 @@ class Board:
         self.mines = []
         self.lucky = None
         self.occupied = set()
+        self.hits_against_you = set()
 
     def get_avaliable_postions(self):
 
@@ -276,13 +305,21 @@ class Player:
 
         new_ship, message = move_ship(current_ship, direction, other_ship)
 
-        if "successfully" in message:
-            if ship_number == 1:
-                self.board.ship1 = new_ship
-            else:
-                self.board.ship2 = new_ship
+        if ("Invalid" in message or 
+            "Cannot" in message or 
+            "Collision" in message):
+            return current_ship, message
 
-        return new_ship, message
+        for cell in new_ship:
+            if not validate_ship_position(cell, self.board):
+                return current_ship, "Invalid move — cannot enter that space."
+        
+        if ship_number == 1:
+            self.board.ship1 = new_ship
+        else:
+            self.board.ship2 = new_ship
+
+        return new_ship, "Ship moved successfully!"
    
 def all_ships_sunk(enemy_ships, hit_cells):
     """
@@ -367,6 +404,7 @@ if __name__ == "__main__":
             enemy_ships = [enemy_player.board.ship1, enemy_player.board.ship2]
 
         status, coord = fire(used_space, hit_cells, enemy_ships)
+        enemy_player.board.hits_against_you.add(coord)
         display_board(used_space, hit_cells)
 
         special = check_special_cells(coord, enemy_player.board)
