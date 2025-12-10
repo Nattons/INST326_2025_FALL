@@ -64,6 +64,15 @@ def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
         print(f"{coord} → Hit!")
         return "hit", coord
 
+def check_special_cells(coord, board):
+    """
+    Checks whether the coordinate is a mine or the lucky cell.
+    """
+    if coord in board.mines:
+        return "mine"
+    if board.lucky == coord:
+        return "lucky"
+    return "none"
 
 
 def display_board(used_space, hit_cells, board_size=BOARD_SIZE):
@@ -274,6 +283,13 @@ class Player:
                 self.board.ship2 = new_ship
 
         return new_ship, message
+   
+def all_ships_sunk(enemy_ships, hit_cells):
+    """
+    Returns True if all ships have been sunk.
+    """
+    return all(all(cell in hit_cells for cell in ship) for ship in enemy_ships)
+
 
 
 class BattleshipGame:
@@ -353,8 +369,13 @@ if __name__ == "__main__":
         status, coord = fire(used_space, hit_cells, enemy_ships)
         display_board(used_space, hit_cells)
 
-        all_sunk = all(all(cell in hit_cells for cell in ship) for ship in enemy_ships)
-        if all_sunk:
+        special = check_special_cells(coord, enemy_player.board)
+        if special == "mine":
+            print(" BOOM! You hit a mine! You lose your next turn!")
+        elif special == "lucky":
+            print("LUCKY! You found the bonus cell! You get an extra shot!")
+
+        if all_ships_sunk(enemy_ships, hit_cells):
             print(f"{current_player.name} WINS!!! All enemy ships have been destroyed.")
             break
 
