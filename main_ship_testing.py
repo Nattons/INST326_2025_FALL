@@ -53,10 +53,12 @@ class Board:
         ship2 (list of tuple): coordinates of the second ship. 
         mines (list of tuple): coordinates of hidden sea mines.
         lucky (tuple or None): coordinate of the lucky rest.
+        ship1_destroyed ():
+        ship2_destroyed ():
         occupied (set of tuple): all occupied coordinates (ship, mines, lucky rest)
     """
     
-    
+##Changed## (Minor changes for testing)
     def __init__(self, size =5):
         """Initalize empty board."""
         self.size = size
@@ -64,6 +66,8 @@ class Board:
         self.ship2 = []
         self.mines = []
         self.lucky = None
+        self.ship1_destroyed = False
+        self.ship2_destroyed = False
         self.occupied = set()
         
         
@@ -155,7 +159,7 @@ class Board:
             except ValueError:
                 print("Invalid input. Enter two numbers seperated by a space.")
     
-
+#(changed but is not important to text_again_with_fire)#
     def place_mines(self, num_mines=2):
         """Randomly place hidden sea mines on the board, mines do not overlap with
         other mines or ships
@@ -166,9 +170,8 @@ class Board:
         while len(self.mines) < num_mines:
             r = random.randint(0, self.size -1)
             c = random.randint(0, self.size -1)
-            if (r, c) not in self.occupied:
-                self.mines.append((r,c))
-                self.occupied.add((r, c))
+            if (r, c) not in self.ship1 and (r, c) not in self.ship2:
+                self.mines.append((r, c))
                 
 
     def place_lucky(self):
