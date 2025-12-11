@@ -440,9 +440,9 @@ if __name__ == "__main__":
 
         special = check_special_cells(coord, enemy_player.board)
         if special == "mine":
-            print(" BOOM! You hit a mine! You lose your next turn!")
+            pass
         elif special == "lucky":
-            print("LUCKY! You found the bonus cell! You get an extra shot!")
+            print("LUCKY! You found the lucky grid! Ships will reset!")
 
         if all_ships_sunk(enemy_ships, hit_cells):
             print(f"{current_player.name} WINS!!! All enemy ships have been destroyed.")
