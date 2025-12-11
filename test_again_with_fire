@@ -84,13 +84,13 @@ def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
 
     if not hit_any:
         print(f"{coord} → Miss")
-        return "miss", coord
+        return "miss", coord, None
     elif sunk_ship:
         print(f"{coord} → Hit! You sunk a ship!")
-        return "sunk", coord
+        return "sunk", coord, ship
     else:
         print(f"{coord} → Hit!")
-        return "hit", coord
+        return "hit", coord, ship
 
 def check_special_cells(coord, board):
     """
@@ -434,8 +434,15 @@ if __name__ == "__main__":
             hit_cells = p2_hits
             enemy_ships = [enemy_player.board.ship1, enemy_player.board.ship2]
 
-        status, coord = fire(used_space, hit_cells, enemy_ships)
+        status, coord, hit_ship = fire(used_space, hit_cells, enemy_ships)
         enemy_player.board.hits_against_you.add(coord)
+        if hit_ship is enemy_player.board.ship1:
+            enemy_player.ship1_can_move = False
+        elif hit_ship is enemy_player.board.ship2:
+            enemy_player.ship2_can_move = False
+        
+
+
         display_board(used_space, hit_cells)
 
         special = check_special_cells(coord, enemy_player.board)
