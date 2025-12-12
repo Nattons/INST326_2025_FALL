@@ -563,7 +563,7 @@ if __name__ == "__main__":
             print(f"All enemy ships have been successfully destroyed.")
             break
 
-        cont = input("Continue game? (y/n): ").strip().lower()
+        cont = input("Continue game? (Press any key to continue or 'n' to quit): ").strip().lower()
         if cont == 'n':
             print("Game Exited.")
             break
