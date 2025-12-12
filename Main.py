@@ -91,6 +91,27 @@ def in_bounds(coord, size=BOARD_SIZE):
 
 
 def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
+    """
+    Main Author: Anzhi
+    Process a player's firing action and determine the result
+    1.User input must be in valid 
+    2.Coordinate must be inside the board boundaries
+    3.Cannot fire on a previous grid
+    4.Determine whether the shot is a miss, hit, or sinks a ship
+    5.Update used spaces and hit cells accordingly
+
+    Args:
+        used_space (set): A set of coordinates that have already been fired.
+        hit_cells (set): A set of coordinates that successfully hit enemy ships.
+        enemy_ships (list[list[tuple]]): A list of enemy ship coordinate lists.
+        board_size (int): The size of the game board.
+    Returns:
+        tuple: 
+            ("miss", coord, None) if the shot misses all ships
+            ("hit", coord, ship) if the shot hits a ship
+            ("sunk", coord, ship) if the shot sinks a ship
+    
+    """
     while True:
         user_input = input("Enter coordinate to fire (row col), e.g. 0 1: ").strip()
         coord = parse_input_to_coord(user_input)
@@ -493,9 +514,34 @@ def all_ships_sunk(enemy_ships, hit_cells):
     return all(all(cell in hit_cells for cell in ship) for ship in enemy_ships)
 
 def is_ship_sunk(ship, attacker_hit_cells):
+    """
+    Main Author: Anzhi
+    
+    Check whether a ship has been completely sunk. The ship has at least one cell and 
+    all ship cells have been hit by the attacker
+
+    Args:
+        ship (list[tuple]): A list of coordinates representing the ship.
+        attacker_hit_cells (set): A set of coordinates that the attacker has hit.
+    Returns:
+        bool: True if the ship is sunk, False otherwise.
+    
+    """
     return len(ship) > 0 and all(cell in attacker_hit_cells for cell in ship)
 
 def random_place_ship(length, size, forbidden):
+    """
+    Main Author: Anzhi
+    Randomly place a ship on the board from all valid positions
+    
+    Args:
+        length (int): The number of grids the ship occupies.
+        size (int): The board size.
+        forbidden (set): A set of coordinates that the ship cannot overlap.
+    Returns:
+        list[tuple] or None: A list of coordinates for the ship placement, or None if no valid placement exists.
+    
+    """  
     valid_positions = []
 
     # h
@@ -518,6 +564,19 @@ def random_place_ship(length, size, forbidden):
     return random.choice(valid_positions)
 
 def lucky_reset(defender_player, attacker_hit_cells):
+    """
+    Main Author: Anzhi
+    Reset the other player's ships when the lucky grid is hit
+Only ships that are NOT sunk can be moved; ships cannot overlap with each other after reset
+If no valid position exists, keep the ship in its original position.
+
+    Args:
+        defender_player (Player): The player whose ships may be reset.
+        attacker_hit_cells (set): A set of coordinates hit by the attacker.
+    Returns:
+        bool: True after the reset process is completed.
+    
+    """  
     board = defender_player.board
     size = board.size
 
