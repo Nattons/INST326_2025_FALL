@@ -234,6 +234,8 @@ def move_ship(ship, direction, other_ship, board):
         new_ship (list of tuple): updated coordiantes of moved ship if validly moved,
         if not original coordiantes remain.
         message (str): messages indicating the result of a move.
+
+    Primary Author: Natalie Siliezar
     """
     if direction == "up":
         new_ship = [(r - 1, c) for r, c in ship]
@@ -270,7 +272,10 @@ class Board:
         occupied (set of tuple): all occupied coordinates (ship, mines, lucky rest)
     """
     def __init__(self, size=5):
-        """Initalize empty board."""
+        """Initalize empty board.
+        
+        Primary Author: Natalie Siliezar
+        """
         self.size = size
         self.ship1 = []
         self.ship2 = []
@@ -284,6 +289,9 @@ class Board:
         
         Returns:
             list of tuple: coordinates that are not part of any ship.
+
+        Primary Author: Natalie Siliezar
+        Techniques Demonstrated: comprehensions or generator expressions.
         """
         all_coords = [(r, c) for r in range(self.size) for c in range(self.size)]
         ships_coords = set(self.ship1 + self.ship2)
@@ -300,6 +308,8 @@ class Board:
         Returns:
             list of tuple or None: valid coordinates for the ship, None if placement
             is not possible.
+
+        Primary Author: Natalie Siliezar
         """
         r, c = start
 
@@ -334,6 +344,8 @@ class Board:
         
         Returns:
             list of tuple: coordinates of the successfully placed ship.
+
+        Primary Author: Natalie Siliezar
         """
         print(f"\nPlace {ship_name}(length{length})")
 
@@ -367,6 +379,8 @@ class Board:
         
         Parameters: 
             num_mines (int): number of mines to place (2 by default).
+
+        Primary Author: Natalie Siliezar
         """
         while len(self.mines) < num_mines:
             r = random.randint(0, self.size - 1)
@@ -378,6 +392,8 @@ class Board:
     def place_lucky(self):
         """Randomly place a lucky rest cell on the board, rest does not overlap with
         ships or mines.
+
+        Primary Author: Natalie Siliezar
         """
         while True:
             r = random.randint(0, self.size - 1)
@@ -406,6 +422,8 @@ class Player:
         
         Parameters:
             name (str): name of the player.
+
+        Primary Author: Natalie Siliezar
         """
         self.name = name
         self.board = Board()
@@ -453,6 +471,8 @@ class Player:
         Returns:
             new_ship (list of tuple): updated coordinates of the moved ship.
             message (str): message describing the result of the move.
+
+        Primary Author: Natalie Siliezar
         """
         if ship_number == 1:
             current_ship = self.board.ship1
@@ -626,13 +646,18 @@ class BattleshipGame:
     def __init__(self):
         """Initializes the Battleship game with two players named "Player 1" and 
         "Player 2".
+
+        Primary Author: Natalie Siliezar
         """
         self.player1 = Player("Player 1")
         self.player2 = Player("Player 2")
 
     def setup_game(self):
         """Sets up the game by configuring both players' boards.Player can set
-        ships manually. Randomly places sea mines and lucky rest cell for each player."""
+        ships manually. Randomly places sea mines and lucky rest cell for each player.
+
+        Primary Author: Natalie Siliezar
+        """
         self.player1.setup()
         self.player2.setup()
 
@@ -646,6 +671,9 @@ class BattleshipGame:
         Side effects:
             updates the positions of teh players ships.
             prints movement prompts and results to terminal.
+
+        Primary Author: Natalie Siliezar
+        Techniques Demonstrated: sequence unpacking.
         """
         print(f"\n{player.name}'s Turn")
 
