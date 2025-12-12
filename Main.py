@@ -2,7 +2,7 @@ import random
 
 BOARD_SIZE = 5
 
-
+#Endrias
 def validate_ship_position(coord, board):
     """
     Ensure that the ship position is valid
@@ -39,7 +39,7 @@ def validate_ship_position(coord, board):
 
     return True
 
-
+#Endrias
 def parse_input_to_coord(input_str):
     """
     Turn user input into a coordinate tuple
@@ -134,7 +134,7 @@ def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
         print(f"{coord} → Hit!")
         return "hit", coord, hit_ship
 
-
+#Endrias
 def check_special_cells(coord, board):
     """
     Checks whether the coordinate is a mine or the lucky cell
@@ -477,7 +477,7 @@ class Player:
 
         return new_ship, "Ship moved successfully!"
 
-
+#Endrias
 def all_ships_sunk(enemy_ships, hit_cells):
     """
     Returns True if all ships have been sunk.
