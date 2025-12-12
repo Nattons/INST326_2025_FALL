@@ -2,7 +2,7 @@ import random
 
 BOARD_SIZE = 5
 
-#Endrias
+
 def validate_ship_position(coord, board, check_fired=True):
     """
     Ensure that the ship position is valid
@@ -19,6 +19,8 @@ def validate_ship_position(coord, board, check_fired=True):
 
     Returns:
         bool: True if the position is valid, False otherwise.
+
+    Primary Author: Endrias Alamerew
     """
 
     row, col = coord
@@ -40,7 +42,7 @@ def validate_ship_position(coord, board, check_fired=True):
 
     return True
 
-#Endrias
+
 def parse_input_to_coord(input_str):
     """
     Turn user input into a coordinate tuple
@@ -57,7 +59,8 @@ def parse_input_to_coord(input_str):
 
     Returns:
         tuple or None: A row and col tuple if valid, otherwise None.
-        
+
+    Primary Author: Endrias Alamerew
     """
     input_str = input_str.replace(",", " ")
     parts = input_str.split()
@@ -170,6 +173,8 @@ def check_special_cells(coord, board):
             "mine" if the cell is a sea mine
             "lucky" if it is the lucky cell
             "none" if it is a normal cell
+
+    Primary Author: Endrias Alamerew
     """
     if coord in board.mines:
         return f"{'mine'}"
@@ -530,6 +535,8 @@ def all_ships_sunk(enemy_ships, hit_cells):
 
     Returns:
         bool: True if all ships are sunk, False otherwise.
+
+    Primary Author: Endrias Alamerew
     """
     return all(all(cell in hit_cells for cell in ship) for ship in enemy_ships)
 
