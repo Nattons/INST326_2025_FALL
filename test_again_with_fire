@@ -71,6 +71,23 @@ def parse_input_to_coord(input_str):
 
 
 def in_bounds(coord, size=BOARD_SIZE):
+    """
+    Check if a coordinate is on the board.
+
+    Parameters:
+    - coord: (row, column) tuple
+    - size: board size (default BOARD_SIZE)
+
+    Returns:
+    - True if inside the board, False otherwise
+   
+    Primary Author: Jishan Farazi
+    Techniques Demonstrated:
+        - Sequence unpacking
+        - Conditional expression
+        
+    """
+
     r, c = coord
     return 0 <= r < size and 0 <= c < size
 
@@ -153,6 +170,13 @@ def display_board(board=None, used_space=None, hit_cells=None, reveal_ships=Fals
     - used_space: set of fired coordinates
     - hit_cells: set of hits
     - reveal_ships: if True, shows ships on the board (for setup)
+   
+    Primary Author: Jishan Farazi
+    Techniques Demonstrated: 
+        - Loops: iterate through rows and columns to build the board display
+        - Conditionals: determine which symbol to display for each cell
+        - String formatting and join: create readable board output
+    
     """
     size = board.size if board else BOARD_SIZE
     print("\n  " + " ".join(str(c) for c in range(size)))  # column headers
@@ -613,7 +637,8 @@ Def main():
     Primary Author: Jishan Farazi
     Techniques Demonstrated: 
         - f-strings containing expressions
-        - set operations (tracking used and hit coordinates with sets)
+        - set operations: tracking used and hit coordinates with sets
+        - Loops for the game play
 
     This function initializes the Battleship game, manages turn order,
     processes player actions (movement, firing, scoring), checks special
