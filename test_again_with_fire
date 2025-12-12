@@ -180,6 +180,20 @@ def display_board(board=None, used_space=None, hit_cells=None, reveal_ships=Fals
 
 
 def move_ship(ship, direction, other_ship, board):
+    """Move a ship one cell in specified direction on a 5x5 grid. Ship can
+    overlap mines and lucky rest but not over other players own ship or over
+    grid boundaires. 
+    
+    Parameters:
+        ship (list of tuple): coordinates of the ship to move. 
+        direction (str): direction of the ship (up, down, left, right).
+        other_ship (list of tuple): coordinate of other ship the player has not moved.
+    
+    Returns:
+        new_ship (list of tuple): updated coordiantes of moved ship if validly moved,
+        if not original coordiantes remain.
+        message (str): messages indicating the result of a move.
+    """
     if direction == "up":
         new_ship = [(r - 1, c) for r, c in ship]
     elif direction == "down":
@@ -203,9 +217,19 @@ def move_ship(ship, direction, other_ship, board):
 
 
 class Board:
-
+    """Represents the 5x5 Battleship game board for a single player. Tracks a player's
+    ships, hidden sea mines, and a lucky rest cell placed at random.
+    
+    Attributes:
+        size (int): the size of the broad (5x5 grid)
+        ship1 (list of tuple): coordinates of the first ship.
+        ship2 (list of tuple): coordinates of the second ship. 
+        mines (list of tuple): coordinates of hidden sea mines.
+        lucky (tuple or None): coordinate of the lucky rest.
+        occupied (set of tuple): all occupied coordinates (ship, mines, lucky rest)
+    """
     def __init__(self, size=5):
-
+        """Initalize empty board."""
         self.size = size
         self.ship1 = []
         self.ship2 = []
@@ -215,13 +239,27 @@ class Board:
         self.hits_against_you = set()
 
     def get_avaliable_postions(self):
-
+        """Returns a list of all unoccupied coordinates on the board.
+        
+        Returns:
+            list of tuple: coordinates that are not part of any ship.
+        """
         all_coords = [(r, c) for r in range(self.size) for c in range(self.size)]
         ships_coords = set(self.ship1 + self.ship2)
         return [coord for coord in all_coords if coord not in ships_coords]
 
     def validate_ship(self, start, direction, length):
-
+        """Validates ship placement to fit the board and aviod overlap.
+        
+        Parameters:
+            start (tuple): starting coordinate (row, col) of the ship.
+            direction (str): 'h' for horizontal or 'v' for vertical placement.
+            length (int): length of the ship.
+            
+        Returns:
+            list of tuple or None: valid coordinates for the ship, None if placement
+            is not possible.
+        """
         r, c = start
 
         if direction == "h":
@@ -247,7 +285,15 @@ class Board:
             return None
 
     def manual_place_ship(self, ship_name, length=2):
-
+        """Allow player to manually place ship starting postitions.
+        
+        Parameters:
+            ship_name (str): name of the ship used for prompts.
+            length (int): length of ship (2 by default)
+        
+        Returns:
+            list of tuple: coordinates of the successfully placed ship.
+        """
         print(f"\nPlace {ship_name}(length{length})")
 
         while True:
@@ -267,7 +313,7 @@ class Board:
                     print("Invalid placement. Try again.")
                     continue
 
-                # Place ship
+
                 self.occupied.update(cells)
                 print(f"{ship_name} placed at {cells}")
                 return cells
@@ -275,7 +321,12 @@ class Board:
                 print("Invalid input. Enter two numbers seperated by a space.")
 
     def place_mines(self, num_mines=2):
-
+        """Randomly place hidden sea mines on the board, mines do not overlap with
+        other mines or ships
+        
+        Parameters: 
+            num_mines (int): number of mines to place (2 by default).
+        """
         while len(self.mines) < num_mines:
             r = random.randint(0, self.size - 1)
             c = random.randint(0, self.size - 1)
@@ -284,7 +335,9 @@ class Board:
                 self.occupied.add((r, c))
 
     def place_lucky(self):
-
+        """Randomly place a lucky rest cell on the board, rest does not overlap with
+        ships or mines.
+        """
         while True:
             r = random.randint(0, self.size - 1)
             c = random.randint(0, self.size - 1)
@@ -295,9 +348,24 @@ class Board:
 
 
 class Player:
-
+    """Represents a battleship player, each player has a name, board, can 
+    place there ships, and move them during the game.
+    
+    Attributes:
+        name (str): name of player.
+        board (Board): the player's game board.
+        ship1_damage (int): the hit of ship1 aganist a mine.
+        ship2_damage (int): the hit of ship2 aganist a mine.
+        ship1_can_move (bool): movement ability of ship1.
+        ship2_can_move (bool): movement ability of ship2.
+        score (int): the player's score.
+    """
     def __init__(self, name):
-
+        """Initialize a player with a name and an empty board.
+        
+        Parameters:
+            name (str): name of the player.
+        """
         self.name = name
         self.board = Board()
         self.ship1_damage = 0
@@ -341,7 +409,16 @@ class Player:
         print(f"\n{self.name}'s setup is complete!\n")
 
     def move_ship(self, ship_number, direction):
-
+        """Moves one of the player's ships in the specified direction.
+        
+        Parameters:
+            ship_number (int): the ship to move (1 or 2).
+            direction (str): direction to move the ship (up, down, left, right).
+        
+        Returns:
+            new_ship (list of tuple): updated coordinates of the moved ship.
+            message (str): message describing the result of the move.
+        """
         if ship_number == 1:
             current_ship = self.board.ship1
             other_ship = self.board.ship2
@@ -466,19 +543,35 @@ def lucky_reset(defender_player, attacker_hit_cells):
 
 
 class BattleshipGame:
-
+    """Represents a battleship game between two players.
+    
+    Attributes:
+        player1 (Player): the first player.
+        player2 (Player): the second player.
+    """
     def __init__(self):
-
+        """Initializes the Battleship game with two players named "Player 1" and 
+        "Player 2".
+        """
         self.player1 = Player("Player 1")
         self.player2 = Player("Player 2")
 
     def setup_game(self):
-
+        """Sets up the game by configuring both players' boards.Player can set
+        ships manually. Randomly places sea mines and lucky rest cell for each player."""
         self.player1.setup()
         self.player2.setup()
 
     def play_turn(self, player):
-
+        """Executes a single turn for a player, allowing them to move ships.
+        
+        Parameters: 
+            player (Player): the player whose turn is being executed.
+        
+        Side effects:
+            updates the positions of teh players ships.
+            prints movement prompts and results to terminal.
+        """
         print(f"\n{player.name}'s Turn")
 
         for ship_number in [1, 2]:
