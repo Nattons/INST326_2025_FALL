@@ -107,15 +107,33 @@ def check_special_cells(coord, board):
     return "none"
 
 
-def display_board(used_space, hit_cells, board_size=BOARD_SIZE):
-    print("\n  " + " ".join(str(c) for c in range(board_size)))  # column headers
-    for r in range(board_size):
+
+
+def display_board(board=None, used_space=None, hit_cells=None, reveal_ships=False):
+    """
+    Displays the board for visual.
+    
+    Parameters:
+    - board: Board object (required if reveal_ships=True)
+    - used_space: set of fired coordinates
+    - hit_cells: set of hits
+    - reveal_ships: if True, shows ships on the board (for setup)
+    """
+    size = board.size if board else BOARD_SIZE
+    print("\n  " + " ".join(str(c) for c in range(size)))  # column headers
+
+    for r in range(size):
         row_display = []
-        for c in range(board_size):
+        for c in range(size):
             coord = (r, c)
-            if coord in hit_cells:
+
+            # If showing setup board and reveal_ships is True
+            if reveal_ships and board and (coord in board.ship1 or coord in board.ship2):
+                row_display.append("S")
+            # If normal game board, show hits/misses
+            elif hit_cells and coord in hit_cells:
                 row_display.append("H")
-            elif coord in used_space:
+            elif used_space and coord in used_space:
                 row_display.append("M")
             else:
                 row_display.append(".")
@@ -123,23 +141,9 @@ def display_board(used_space, hit_cells, board_size=BOARD_SIZE):
     print()
 
 
-def display_setup_board(board, reveal=False):
-    print("\n  " + " ".join(str(c) for c in range(board.size)))
-    for r in range(board.size):
-        row_display = []
-        for c in range(board.size):
-            coord = (r, c)
 
-            if reveal and (
-                    coord in (board.ship1 or []) or
-                    coord in (board.ship2 or [])
-            ):
-                row_display.append("S")
-            else:
-                row_display.append(".")
 
-        print(f"{r} " + " ".join(row_display))
-    print()
+
 
 
 def move_ship(ship, direction, other_ship, board):
@@ -274,15 +278,15 @@ class Player:
         print(f"\n{self.name} Setup")
 
         print("\nInitial empty board:")
-        display_setup_board(self.board)
+        display_board(board=self.board, reveal_ships=False)
 
         self.board.ship1 = self.board.manual_place_ship("Ship 1")
         print("\nBoard after placing Ship 1:")
-        display_setup_board(self.board, reveal=True)
+        display_board(board=self.board, reveal_ships=True)
 
         self.board.ship2 = self.board.manual_place_ship("Ship 2")
         print("\nBoard after placing Ship 2:")
-        display_setup_board(self.board, reveal=True)
+        display_board(board=self.board, reveal_ships=True)
 
         self.board.place_mines()
         print("Mines placed.")
@@ -506,7 +510,7 @@ if __name__ == "__main__":
             enemy_player.ship2_can_move = False
 
 
-        display_board(used_space, hit_cells)
+        display_board(used_space=used_space, hit_cells=hit_cells)
 
         special = check_special_cells(coord, enemy_player.board)
         if special == "mine":
@@ -524,3 +528,4 @@ if __name__ == "__main__":
             break
 
         turn += 1
+         
