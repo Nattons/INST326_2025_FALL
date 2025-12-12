@@ -1,1 +1,700 @@
 """2nd Text File to pratice adding files"""
+
+import random
+
+BOARD_SIZE = 5
+
+#Endrias
+def validate_ship_position(coord, board, check_fired=True):
+    """
+    Ensure that the ship position is valid
+    Expectation:
+    1. Inside the board boundaries
+    2. Doesn't overlap another ship
+    3. Can't place ship on fired cell (optional)
+
+    Args:
+        coord (tuple): A row and col coordinate to validate.
+        board (Board): The board object containing ship positions and hit records.
+        check_fired (bool): Whether to block placement on fired cells.
+                                     Defaulted to True(Optional)
+
+    Returns:
+        bool: True if the position is valid, False otherwise.
+    """
+
+    row, col = coord
+
+    # Check for bounds
+    if row < 0 or row >= board.size or col < 0 or col >= board.size:
+        print("Invalid: position is outside the board.")
+        return False
+
+    # Check if the space is already occupied by another ship
+    if coord in board.ship1 or coord in board.ship2:
+        print("Invalid: position already has a ship.")
+        return False
+
+    # Optional check: fired cells
+    if check_fired and hasattr(board, "hits_against_you") and coord in board.hits_against_you:
+        print("Invalid: your ship cannot move into a space already fired upon.")
+        return False
+
+    return True
+
+#Endrias
+def parse_input_to_coord(input_str):
+    """
+    Turn user input into a coordinate tuple
+    Input accepted
+    ex.
+    1,2 (With comma)
+    1 2 (With space)
+
+    The function return none if it the input is not valid 
+    or can't be converted to integers
+
+    Args:
+        input_str (str): The user input a string
+
+    Returns:
+        tuple or None: A row and col tuple if valid, otherwise None.
+        
+    """
+    input_str = input_str.replace(",", " ")
+    parts = input_str.split()
+    if len(parts) != 2:
+        return None
+    try:
+        row = int(parts[0])
+        col = int(parts[1])
+        return (row, col)
+    except ValueError:
+        return None
+
+
+def in_bounds(coord, size=BOARD_SIZE):
+    """
+    Check if a coordinate is on the board.
+
+    Parameters:
+    - coord: (row, column) tuple
+    - size: board size (default BOARD_SIZE)
+
+    Returns:
+    - True if inside the board, False otherwise
+   
+    Primary Author: Jishan Farazi
+        
+    """
+
+    r, c = coord
+    return 0 <= r < size and 0 <= c < size
+
+
+def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
+    while True:
+        user_input = input("Enter coordinate to fire (row col), e.g. 0 1: ").strip()
+        coord = parse_input_to_coord(user_input)
+
+        if coord is None:
+            print("Invalid format! Use: row col  for example  1 3")
+            continue
+
+        if not in_bounds(coord, board_size):
+            print("Out of bounds! Please enter a value between 0 and 4.")
+            continue
+
+        if coord in used_space:
+            print("You already fired here. Choose another spot.")
+            continue
+
+        break
+
+    used_space.add(coord)
+
+    hit_any = False
+    sunk_ship = False
+    hit_ship = None
+
+    for ship in enemy_ships:
+        if coord in ship:
+            hit_any = True
+            hit_cells.add(coord)
+            hit_ship = ship
+            if all(cell in hit_cells for cell in ship):
+                sunk_ship = True
+            break
+
+    if not hit_any:
+        print(f"{coord} → Miss")
+        return "miss", coord, None
+
+    elif sunk_ship:
+        print(f"{coord} → Hit! You sunk a ship!")
+        return "sunk", coord, hit_ship
+    else:
+        print(f"{coord} → Hit!")
+        return "hit", coord, hit_ship
+
+#Endrias
+def check_special_cells(coord, board):
+    """
+    Checks whether the coordinate is a mine or the lucky cell
+
+    Args:
+        coord (tuple): The row and col coordinate that was fired on.
+        board (Board): The board object that is containing mines and the lucky cell.
+
+    Returns:
+        str: 
+            "mine" if the cell is a sea mine
+            "lucky" if it is the lucky cell
+            "none" if it is a normal cell
+    """
+    if coord in board.mines:
+        return f"{'mine'}"
+    if board.lucky == coord:
+        return f"{'lucky'}"
+    return "none"
+
+
+
+
+def display_board(board=None, used_space=None, hit_cells=None, reveal_ships=False):
+    """
+    Displays the board for visual.
+    Primary Author: Jishan Farazi
+    Techniques Demonstrated: 
+        - keyword arguments
+
+    Parameters:
+    - board: Board object containing ship positions 
+    - used_space: set of coordinates that have been fired at 
+    - hit_cells: set of coordinates that were hit 
+    - reveal_ships: boolean that shows ships if True 
+
+
+    """
+    size = board.size if board else BOARD_SIZE
+    print("\n  " + " ".join(str(c) for c in range(size)))  
+
+    for r in range(size):
+        row_display = []
+        for c in range(size):
+            coord = (r, c)
+
+            if reveal_ships and board and (coord in board.ship1 or coord in board.ship2):
+                row_display.append("S")
+            elif hit_cells and coord in hit_cells:
+                row_display.append("H")
+            elif used_space and coord in used_space:
+                row_display.append("M")
+            else:
+                row_display.append(".")
+        print(f"{r} " + " ".join(row_display))
+    print()
+
+
+
+
+
+
+
+def move_ship(ship, direction, other_ship, board):
+    """Move a ship one cell in specified direction on a 5x5 grid. Ship can
+    overlap mines and lucky rest but not over other players own ship or over
+    grid boundaires. 
+    
+    Parameters:
+        ship (list of tuple): coordinates of the ship to move. 
+        direction (str): direction of the ship (up, down, left, right).
+        other_ship (list of tuple): coordinate of other ship the player has not moved.
+    
+    Returns:
+        new_ship (list of tuple): updated coordiantes of moved ship if validly moved,
+        if not original coordiantes remain.
+        message (str): messages indicating the result of a move.
+    """
+    if direction == "up":
+        new_ship = [(r - 1, c) for r, c in ship]
+    elif direction == "down":
+        new_ship = [(r + 1, c) for r, c in ship]
+    elif direction == "left":
+        new_ship = [(r, c - 1) for r, c in ship]
+    elif direction == "right":
+        new_ship = [(r, c + 1) for r, c in ship]
+    else:
+        return ship, "Invalid Direction"
+
+    for r, c in new_ship:
+        if r < 0 or r >= BOARD_SIZE or c < 0 or c >= BOARD_SIZE:
+            return ship, "Cannot Move!: reached the edge of board."
+
+    for pos in new_ship:
+        if pos in other_ship:
+            return ship, "Collision Imminent!: pick another direction."
+
+    return new_ship, "Ship moved successfully!"
+
+
+class Board:
+    """Represents the 5x5 Battleship game board for a single player. Tracks a player's
+    ships, hidden sea mines, and a lucky rest cell placed at random.
+    
+    Attributes:
+        size (int): the size of the broad (5x5 grid)
+        ship1 (list of tuple): coordinates of the first ship.
+        ship2 (list of tuple): coordinates of the second ship. 
+        mines (list of tuple): coordinates of hidden sea mines.
+        lucky (tuple or None): coordinate of the lucky rest.
+        occupied (set of tuple): all occupied coordinates (ship, mines, lucky rest)
+    """
+    def __init__(self, size=5):
+        """Initalize empty board."""
+        self.size = size
+        self.ship1 = []
+        self.ship2 = []
+        self.mines = []
+        self.lucky = None
+        self.occupied = set()
+        self.hits_against_you = set()
+
+    def get_avaliable_postions(self):
+        """Returns a list of all unoccupied coordinates on the board.
+        
+        Returns:
+            list of tuple: coordinates that are not part of any ship.
+        """
+        all_coords = [(r, c) for r in range(self.size) for c in range(self.size)]
+        ships_coords = set(self.ship1 + self.ship2)
+        return [coord for coord in all_coords if coord not in ships_coords]
+
+    def validate_ship(self, start, direction, length):
+        """Validates ship placement to fit the board and aviod overlap.
+        
+        Parameters:
+            start (tuple): starting coordinate (row, col) of the ship.
+            direction (str): 'h' for horizontal or 'v' for vertical placement.
+            length (int): length of the ship.
+            
+        Returns:
+            list of tuple or None: valid coordinates for the ship, None if placement
+            is not possible.
+        """
+        r, c = start
+
+        if direction == "h":
+            if c + length - 1 >= self.size:
+                c = self.size - length
+
+            while c >= 0:
+                cells = [(r, c + i) for i in range(length)]
+                if all(cell not in self.occupied for cell in cells):
+                    return cells
+                c -= 1
+            return None
+
+        else:
+            if r + length - 1 >= self.size:
+                r = self.size - length
+
+            while r >= 0:
+                cells = [(r + i, c) for i in range(length)]
+                if all(cell not in self.occupied for cell in cells):
+                    return cells
+                r -= 1
+            return None
+
+    def manual_place_ship(self, ship_name, length=2):
+        """Allow player to manually place ship starting postitions.
+        
+        Parameters:
+            ship_name (str): name of the ship used for prompts.
+            length (int): length of ship (2 by default)
+        
+        Returns:
+            list of tuple: coordinates of the successfully placed ship.
+        """
+        print(f"\nPlace {ship_name}(length{length})")
+
+        while True:
+            try:
+                available = [(r, c) for r in range(self.size) for c in range(self.size)
+                             if (r, c) not in self.occupied]
+                print("Available coordiantes to place the ship:", available)
+
+                r, c = map(int, input("Enter starting coordinate (row col): ").split())
+                direction = input("Direction (h for horizontal, v for vertical): ").lower()
+                if direction not in ("h", "v"):
+                    print("Invalid direction. Try again.")
+                    continue
+
+                cells = self.validate_ship((r, c), direction, length)
+                if cells is None:
+                    print("Invalid placement. Try again.")
+                    continue
+
+
+                self.occupied.update(cells)
+                print(f"{ship_name} placed at {cells}")
+                return cells
+            except ValueError:
+                print("Invalid input. Enter two numbers seperated by a space.")
+
+    def place_mines(self, num_mines=2):
+        """Randomly place hidden sea mines on the board, mines do not overlap with
+        other mines or ships
+        
+        Parameters: 
+            num_mines (int): number of mines to place (2 by default).
+        """
+        while len(self.mines) < num_mines:
+            r = random.randint(0, self.size - 1)
+            c = random.randint(0, self.size - 1)
+            if (r, c) not in self.occupied:
+                self.mines.append((r, c))
+                self.occupied.add((r, c))
+
+    def place_lucky(self):
+        """Randomly place a lucky rest cell on the board, rest does not overlap with
+        ships or mines.
+        """
+        while True:
+            r = random.randint(0, self.size - 1)
+            c = random.randint(0, self.size - 1)
+            if (r, c) not in self.occupied:
+                self.lucky = (r, c)
+                self.occupied.add((r, c))
+                break
+
+
+class Player:
+    """Represents a battleship player, each player has a name, board, can 
+    place there ships, and move them during the game.
+    
+    Attributes:
+        name (str): name of player.
+        board (Board): the player's game board.
+        ship1_damage (int): the hit of ship1 aganist a mine.
+        ship2_damage (int): the hit of ship2 aganist a mine.
+        ship1_can_move (bool): movement ability of ship1.
+        ship2_can_move (bool): movement ability of ship2.
+        score (int): the player's score.
+    """
+    def __init__(self, name):
+        """Initialize a player with a name and an empty board.
+        
+        Parameters:
+            name (str): name of the player.
+        """
+        self.name = name
+        self.board = Board()
+        self.ship1_damage = 0
+        self.ship2_damage = 0
+        self.ship1_can_move = True
+        self.ship2_can_move = True
+        self.score = 0
+
+    def setup(self):
+        """
+        Handles the player setup phase.
+
+        Primary Author: Jishan Farazi
+        
+        """
+        print(f"\n{self.name} Setup")
+
+        print("\nInitial empty board:")
+        display_board(board=self.board, reveal_ships=False)
+
+        self.board.ship1 = self.board.manual_place_ship("Ship 1")
+        print("\nBoard after placing Ship 1:")
+        display_board(board=self.board, reveal_ships=True)
+
+        self.board.ship2 = self.board.manual_place_ship("Ship 2")
+        print("\nBoard after placing Ship 2:")
+        display_board(board=self.board, reveal_ships=True)
+
+        self.board.place_mines()
+        print("Mines placed.")
+
+        self.board.place_lucky()
+        print("Lucky cell placed.")
+
+        print(f"\n{self.name}'s setup is complete!\n")
+
+    def move_ship(self, ship_number, direction):
+        """Moves one of the player's ships in the specified direction.
+        
+        Parameters:
+            ship_number (int): the ship to move (1 or 2).
+            direction (str): direction to move the ship (up, down, left, right).
+        
+        Returns:
+            new_ship (list of tuple): updated coordinates of the moved ship.
+            message (str): message describing the result of the move.
+        """
+        if ship_number == 1:
+            current_ship = self.board.ship1
+            other_ship = self.board.ship2
+            can_move = self.ship1_can_move
+            ship_name = "Ship 1"
+        else:
+            current_ship = self.board.ship2
+            other_ship = self.board.ship1
+            can_move = self.ship2_can_move
+            ship_name = "Ship 2"
+
+        if not can_move:
+            return current_ship, f"{ship_name} cannot move right now due to a mine hit!"
+
+        new_ship, message = move_ship(current_ship, direction, other_ship, self.board)
+
+        if ("Invalid" in message or
+                "Cannot" in message or
+                "Collision" in message):
+            return current_ship, message
+
+        for cell in new_ship:
+            if cell in self.board.mines:
+                print(f"{ship_name} hit a sea mine at {cell}!.")
+                if ship_number == 1:
+                    self.board.ship1 = new_ship
+                    self.ship1_damage += 1
+                    self.ship1_can_move = False
+                else:
+                    self.board.ship2 = new_ship
+                    self.ship2_damage += 1
+                    self.ship2_can_move = False
+                return new_ship, f"{ship_name} hit a mine and is now immobilized!."
+
+        for cell in new_ship:
+            if not validate_ship_position(cell, self.board):
+                return current_ship, "Invalid move — cannot enter that space."
+
+        if ship_number == 1:
+            self.board.ship1 = new_ship
+        else:
+            self.board.ship2 = new_ship
+
+        return new_ship, "Ship moved successfully!"
+
+#Endrias
+def all_ships_sunk(enemy_ships, hit_cells):
+    """
+    Returns True if all ships have been sunk.
+
+    Args:
+        enemy_ships (list): A list of enemy ships and where each ship is a list of coordinates.
+        hit_cells (set): A set of coordinates that have been hit.
+
+    Returns:
+        bool: True if all ships are sunk, False otherwise.
+    """
+    return all(all(cell in hit_cells for cell in ship) for ship in enemy_ships)
+
+def is_ship_sunk(ship, attacker_hit_cells):
+    return len(ship) > 0 and all(cell in attacker_hit_cells for cell in ship)
+
+def random_place_ship(length, size, forbidden):
+    valid_positions = []
+
+    # h
+    for r in range(size):
+        for c in range(size - length + 1):
+            cells = [(r, c + i) for i in range(length)]
+            if all(cell not in forbidden for cell in cells):
+                valid_positions.append(cells)
+
+    # v
+    for r in range(size - length + 1):
+        for c in range(size):
+            cells = [(r + i, c) for i in range(length)]
+            if all(cell not in forbidden for cell in cells):
+                valid_positions.append(cells)
+
+    if not valid_positions:
+        return None
+
+    return random.choice(valid_positions)
+
+def lucky_reset(defender_player, attacker_hit_cells):
+    board = defender_player.board
+    size = board.size
+
+    ship1_sunk = is_ship_sunk(board.ship1, attacker_hit_cells)
+    ship2_sunk = is_ship_sunk(board.ship2, attacker_hit_cells)
+
+    forbidden_base = set(board.mines)
+    forbidden_base |= set(board.hits_against_you)
+    if board.lucky is not None:
+        forbidden_base.add(board.lucky)
+
+    new_ship1 = board.ship1[:]
+    new_ship2 = board.ship2[:]
+
+    if not ship1_sunk:
+        forbidden = forbidden_base | set(new_ship2)
+        placed = random_place_ship(len(board.ship1), size, forbidden)
+        if placed is not None:
+            new_ship1 = placed
+
+    if not ship2_sunk:
+        forbidden = forbidden_base | set(new_ship1)
+        placed = random_place_ship(len(board.ship2), size, forbidden)
+        if placed is not None:
+            new_ship2 = placed
+
+    board.ship1 = new_ship1
+    board.ship2 = new_ship2
+
+    board.occupied = set(board.mines)
+    board.occupied.update(board.ship1)
+    board.occupied.update(board.ship2)
+    if board.lucky is not None:
+        board.occupied.add(board.lucky)
+
+    return True
+
+
+class BattleshipGame:
+    """Represents a battleship game between two players.
+    
+    Attributes:
+        player1 (Player): the first player.
+        player2 (Player): the second player.
+    """
+    def __init__(self):
+        """Initializes the Battleship game with two players named "Player 1" and 
+        "Player 2".
+        """
+        self.player1 = Player("Player 1")
+        self.player2 = Player("Player 2")
+
+    def setup_game(self):
+        """Sets up the game by configuring both players' boards.Player can set
+        ships manually. Randomly places sea mines and lucky rest cell for each player."""
+        self.player1.setup()
+        self.player2.setup()
+
+    def play_turn(self, player):
+        """Executes a single turn for a player, allowing them to move ships.
+        
+        Parameters: 
+            player (Player): the player whose turn is being executed.
+        
+        Side effects:
+            updates the positions of teh players ships.
+            prints movement prompts and results to terminal.
+        """
+        print(f"\n{player.name}'s Turn")
+
+        for ship_number in [1, 2]:
+
+            if ship_number == 1 and not player.ship1_can_move:
+                print("Ship 1 is immobilzed and cannot move.")
+                continue
+            elif ship_number == 2 and not player.ship2_can_move:
+                print("Ship 2 is immobilzed and cannot move.")
+                continue
+
+            while True:
+                direction = input(
+                    f"Enter direction to move ship{ship_number}(up, down, left, right) or 's' to skip: "
+                ).strip().lower()
+
+                if direction == 's':
+                    print(f"Ship {ship_number} skipped")
+                    break
+
+                if direction not in ["up", "down", "left", "right"]:
+                    print("Invalid. Please type up, down, left, or right")
+                    continue
+
+                new_pos, message = player.move_ship(ship_number, direction)
+
+                print(f"Ship 1 Position: {player.board.ship1}")
+                print(f"Ship 2 Position: {player.board.ship2}")
+                print(message)
+
+                if "successfully" in message or "mine" in message:
+                    break
+
+
+def main():
+    """
+    Runs the Battleship game in the terminal.
+
+    Primary Author: Jishan Farazi
+    Techniques Demonstrated: 
+        - composition of two custom classes
+    """
+
+    game = BattleshipGame()
+    game.setup_game()
+
+    # hit record
+    p1_used = set()
+    p1_hits = set()
+    p2_used = set()
+    p2_hits = set()
+
+    players = [game.player1, game.player2]
+    turn = 0
+
+    while True:
+        current_player = players[turn % 2]
+        enemy_player = players[(turn + 1) % 2]
+
+        game.play_turn(current_player)
+
+        print(f"{current_player.name} end of turn postions:")
+        print("Ship 1:", current_player.board.ship1)
+        print("Ship 2:", current_player.board.ship2)
+
+        if current_player is game.player1:
+            used_space = p1_used
+            hit_cells = p1_hits
+            enemy_ships = [enemy_player.board.ship1, enemy_player.board.ship2]
+        else:
+            used_space = p2_used
+            hit_cells = p2_hits
+            enemy_ships = [enemy_player.board.ship1, enemy_player.board.ship2]
+
+        status, coord, hit_ship = fire(used_space, hit_cells, enemy_ships)
+        if status == "hit":
+            current_player.score += 1
+        elif status == "sunk":
+            current_player.score += 5
+        print(f"{current_player.name} Score: {current_player.score}")
+        
+        enemy_player.board.hits_against_you.add(coord)
+        if hit_ship is enemy_player.board.ship1:
+            enemy_player.ship1_can_move = False
+        elif hit_ship is enemy_player.board.ship2:
+            enemy_player.ship2_can_move = False
+
+
+        display_board(used_space=used_space, hit_cells=hit_cells)
+
+        special = check_special_cells(coord, enemy_player.board)
+        if special == "mine":
+            pass
+        elif special == "lucky":
+            print("You hit the lucky grid! Their ships position will be reset!")
+
+        if all_ships_sunk(enemy_ships, hit_cells):
+            print(f"{current_player.name} is the Winner!!!!")
+            print(f"All enemy ships have been successfully destroyed.")
+            break
+
+        cont = input("Continue game? (Type any letter to continue or 'quit' to quit): ").strip().lower()
+        if cont == 'quit':
+            print("Game Exited.")
+            break
+
+        turn += 1
+
+if __name__ == "__main__":
+    main()
