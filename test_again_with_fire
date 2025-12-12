@@ -153,6 +153,13 @@ def display_board(board=None, used_space=None, hit_cells=None, reveal_ships=Fals
     - used_space: set of fired coordinates
     - hit_cells: set of hits
     - reveal_ships: if True, shows ships on the board (for setup)
+   
+    Primary Author: Jishan Farazi
+    Techniques Demonstrated: 
+        - Loops: iterate through rows and columns to build the board display
+        - Conditionals: determine which symbol to display for each cell
+        - String formatting and join: create readable board output
+    
     """
     size = board.size if board else BOARD_SIZE
     print("\n  " + " ".join(str(c) for c in range(size)))  # column headers
