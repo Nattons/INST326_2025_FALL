@@ -72,6 +72,14 @@ def parse_input_to_coord(input_str):
 
 def in_bounds(coord, size=BOARD_SIZE):
     """
+    Check if a coordinate is on the board.
+
+    Parameters:
+    - coord: (row, column) tuple
+    - size: board size (default BOARD_SIZE)
+
+    Returns:
+    - True if inside the board, False otherwise
    
     Primary Author: Jishan Farazi
     Techniques Demonstrated:
