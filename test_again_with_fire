@@ -31,6 +31,7 @@ def validate_ship_position(coord, board):
 
     return True
 
+
 def parse_input_to_coord(input_str):
     input_str = input_str.replace(",", " ")
     parts = input_str.split()
@@ -72,12 +73,13 @@ def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
 
     hit_any = False
     sunk_ship = False
+    hit_ship = None
 
     for ship in enemy_ships:
         if coord in ship:
             hit_any = True
             hit_cells.add(coord)
-
+            hit_ship = ship
             if all(cell in hit_cells for cell in ship):
                 sunk_ship = True
             break
@@ -85,12 +87,14 @@ def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
     if not hit_any:
         print(f"{coord} → Miss")
         return "miss", coord, None
+
     elif sunk_ship:
         print(f"{coord} → Hit! You sunk a ship!")
         return "sunk", coord, hit_ship
     else:
         print(f"{coord} → Hit!")
         return "hit", coord, hit_ship
+
 
 def check_special_cells(coord, board):
     """
@@ -127,8 +131,8 @@ def display_setup_board(board, reveal=False):
             coord = (r, c)
 
             if reveal and (
-                coord in (board.ship1 or []) or
-                coord in (board.ship2 or [])
+                    coord in (board.ship1 or []) or
+                    coord in (board.ship2 or [])
             ):
                 row_display.append("S")
             else:
@@ -136,13 +140,6 @@ def display_setup_board(board, reveal=False):
 
         print(f"{r} " + " ".join(row_display))
     print()
-
-
-
-
-
-
-
 
 
 def move_ship(ship, direction, other_ship, board):
@@ -157,11 +154,9 @@ def move_ship(ship, direction, other_ship, board):
     else:
         return ship, "Invalid Direction"
 
-
     for r, c in new_ship:
         if r < 0 or r >= BOARD_SIZE or c < 0 or c >= BOARD_SIZE:
             return ship, "Cannot Move!: reached the edge of board."
-
 
     for pos in new_ship:
         if pos in other_ship:
@@ -272,6 +267,7 @@ class Player:
         self.ship2_damage = 0
         self.ship1_can_move = True
         self.ship2_can_move = True
+        self.score = 0
 
     def setup(self):
 
@@ -290,12 +286,11 @@ class Player:
 
         self.board.place_mines()
         print("Mines placed.")
-        
+
         self.board.place_lucky()
         print("Lucky cell placed.")
 
         print(f"\n{self.name}'s setup is complete!\n")
-
 
     def move_ship(self, ship_number, direction):
 
@@ -315,11 +310,11 @@ class Player:
 
         new_ship, message = move_ship(current_ship, direction, other_ship, self.board)
 
-        if ("Invalid" in message or 
-            "Cannot" in message or 
-            "Collision" in message):
+        if ("Invalid" in message or
+                "Cannot" in message or
+                "Collision" in message):
             return current_ship, message
-        
+
         for cell in new_ship:
             if cell in self.board.mines:
                 print(f"{ship_name} hit a sea mine at {cell}!.")
@@ -336,20 +331,20 @@ class Player:
         for cell in new_ship:
             if not validate_ship_position(cell, self.board):
                 return current_ship, "Invalid move — cannot enter that space."
-        
+
         if ship_number == 1:
             self.board.ship1 = new_ship
         else:
             self.board.ship2 = new_ship
 
         return new_ship, "Ship moved successfully!"
-   
+
+
 def all_ships_sunk(enemy_ships, hit_cells):
     """
     Returns True if all ships have been sunk.
     """
     return all(all(cell in hit_cells for cell in ship) for ship in enemy_ships)
-
 
 
 class BattleshipGame:
@@ -365,39 +360,39 @@ class BattleshipGame:
         self.player2.setup()
 
     def play_turn(self, player):
-        
+
         print(f"\n{player.name}'s Turn")
 
         for ship_number in [1, 2]:
-                    
-                if ship_number == 1 and not player.ship1_can_move:
-                    print("Ship 1 is immobilzed by mine and cannot move.")
+
+            if ship_number == 1 and not player.ship1_can_move:
+                print("Ship 1 is immobilzed and cannot move.")
+                continue
+            elif ship_number == 2 and not player.ship2_can_move:
+                print("Ship 2 is immobilzed and cannot move.")
+                continue
+
+            while True:
+                direction = input(
+                    f"Enter direction to move ship{ship_number}(up, down, left, right) or 's' to skip: "
+                ).strip().lower()
+
+                if direction == 's':
+                    print(f"Ship {ship_number} skipped")
+                    break
+
+                if direction not in ["up", "down", "left", "right"]:
+                    print("Invalid. Please type up, down, left, or right")
                     continue
-                elif ship_number == 2 and not player.ship2_can_move:
-                    print("Ship 2 is immobilzed by mine and cannot move.")
-                    continue 
-                
-                while True:
-                    direction = input(
-                        f"Enter direction to move ship{ship_number}(up, down, left, right) or 's' to skip: "
-                    ).strip().lower()
 
-                    if direction == 's':
-                        print(f"Ship {ship_number} skipped")
-                        break
+                new_pos, message = player.move_ship(ship_number, direction)
 
-                    if direction not in ["up", "down", "left", "right"]:
-                        print("Invalid. Please type up, down, left, or right")
-                        continue
+                print(f"Ship 1 Position: {player.board.ship1}")
+                print(f"Ship 2 Position: {player.board.ship2}")
+                print(message)
 
-                    new_pos, message = player.move_ship(ship_number, direction)
-
-                    print(f"Ship 1 Position: {player.board.ship1}")
-                    print(f"Ship 2 Position: {player.board.ship2}")
-                    print(message)
-
-                    if "successfully" in message or "mine" in message:
-                        break
+                if "successfully" in message or "mine" in message:
+                    break
 
 
 if __name__ == "__main__":
@@ -435,12 +430,17 @@ if __name__ == "__main__":
             enemy_ships = [enemy_player.board.ship1, enemy_player.board.ship2]
 
         status, coord, hit_ship = fire(used_space, hit_cells, enemy_ships)
+        if status == "hit":
+            current_player.score += 1
+        elif status == "sunk":
+            current_player.score += 5
+        print(f"{current_player.name} Score: {current_player.score}")
+        
         enemy_player.board.hits_against_you.add(coord)
         if hit_ship is enemy_player.board.ship1:
             enemy_player.ship1_can_move = False
         elif hit_ship is enemy_player.board.ship2:
             enemy_player.ship2_can_move = False
-        
 
 
         display_board(used_space, hit_cells)
