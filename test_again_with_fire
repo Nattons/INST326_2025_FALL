@@ -346,6 +346,69 @@ def all_ships_sunk(enemy_ships, hit_cells):
     """
     return all(all(cell in hit_cells for cell in ship) for ship in enemy_ships)
 
+def is_ship_sunk(ship, attacker_hit_cells):
+    return len(ship) > 0 and all(cell in attacker_hit_cells for cell in ship)
+
+def random_place_ship(length, size, forbidden):
+    valid_positions = []
+
+    # h
+    for r in range(size):
+        for c in range(size - length + 1):
+            cells = [(r, c + i) for i in range(length)]
+            if all(cell not in forbidden for cell in cells):
+                valid_positions.append(cells)
+
+    # v
+    for r in range(size - length + 1):
+        for c in range(size):
+            cells = [(r + i, c) for i in range(length)]
+            if all(cell not in forbidden for cell in cells):
+                valid_positions.append(cells)
+
+    if not valid_positions:
+        return None
+
+    return random.choice(valid_positions)
+
+def lucky_reset(defender_player, attacker_hit_cells):
+    board = defender_player.board
+    size = board.size
+
+    ship1_sunk = is_ship_sunk(board.ship1, attacker_hit_cells)
+    ship2_sunk = is_ship_sunk(board.ship2, attacker_hit_cells)
+
+    forbidden_base = set(board.mines)
+    forbidden_base |= set(board.hits_against_you)
+    if board.lucky is not None:
+        forbidden_base.add(board.lucky)
+
+    new_ship1 = board.ship1[:]
+    new_ship2 = board.ship2[:]
+
+    if not ship1_sunk:
+        forbidden = forbidden_base | set(new_ship2)
+        placed = random_place_ship(len(board.ship1), size, forbidden)
+        if placed is not None:
+            new_ship1 = placed
+
+    if not ship2_sunk:
+        forbidden = forbidden_base | set(new_ship1)
+        placed = random_place_ship(len(board.ship2), size, forbidden)
+        if placed is not None:
+            new_ship2 = placed
+
+    board.ship1 = new_ship1
+    board.ship2 = new_ship2
+
+    board.occupied = set(board.mines)
+    board.occupied.update(board.ship1)
+    board.occupied.update(board.ship2)
+    if board.lucky is not None:
+        board.occupied.add(board.lucky)
+
+    return True
+
 
 class BattleshipGame:
 
@@ -449,7 +512,7 @@ if __name__ == "__main__":
         if special == "mine":
             pass
         elif special == "lucky":
-            print("LUCKY! You found the lucky grid! Ships will reset!")
+            print("You hit the lucky grid! Their ships position will be reset!")
 
         if all_ships_sunk(enemy_ships, hit_cells):
             print(f"{current_player.name} WINS!!! All enemy ships have been destroyed.")
