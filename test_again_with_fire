@@ -87,10 +87,10 @@ def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
         return "miss", coord, None
     elif sunk_ship:
         print(f"{coord} → Hit! You sunk a ship!")
-        return "sunk", coord, ship
+        return "sunk", coord, hit_ship
     else:
         print(f"{coord} → Hit!")
-        return "hit", coord, ship
+        return "hit", coord, hit_ship
 
 def check_special_cells(coord, board):
     """
