@@ -3,37 +3,38 @@ import random
 BOARD_SIZE = 5
 
 #Endrias
-def validate_ship_position(coord, board):
+def validate_ship_position(coord, board, check_fired=True):
     """
     Ensure that the ship position is valid
-    Expactation:
-    1.Inside the board boundaries
-    2.Doesn't ver lap another ship
-    3.Can't place ship on fired cell
+    Expectation:
+    1. Inside the board boundaries
+    2. Doesn't overlap another ship
+    3. Can't place ship on fired cell (optional)
 
     Args:
         coord (tuple): A row and col coordinate to validate.
         board (Board): The board object containing ship positions and hit records.
+        check_fired (bool): Whether to block placement on fired cells.
+                                     Defaulted to True(Optional)
+
     Returns:
         bool: True if the position is valid, False otherwise.
-    
     """
 
     row, col = coord
 
-    #Check for bounds
+    # Check for bounds
     if row < 0 or row >= board.size or col < 0 or col >= board.size:
         print("Invalid: position is outside the board.")
         return False
 
-    #Check if the space is already occupied by another ship
+    # Check if the space is already occupied by another ship
     if coord in board.ship1 or coord in board.ship2:
         print("Invalid: position already has a ship.")
         return False
 
-    # Check if the opponent already fired on this cell location
-    # (prevents moving onto a revealed space)
-    if hasattr(board, "hits_against_you") and coord in board.hits_against_you:
+    # Optional check: fired cells
+    if check_fired and hasattr(board, "hits_against_you") and coord in board.hits_against_you:
         print("Invalid: your ship cannot move into a space already fired upon.")
         return False
 
