@@ -567,8 +567,8 @@ def lucky_reset(defender_player, attacker_hit_cells):
     """
     Main Author: Anzhi
     Reset the other player's ships when the lucky grid is hit
-Only ships that are NOT sunk can be moved; ships cannot overlap with each other after reset
-If no valid position exists, keep the ship in its original position.
+    Only ships that are NOT sunk can be moved; ships cannot overlap with each other after reset
+    If no valid position exists, keep the ship in its original position.
 
     Args:
         defender_player (Player): The player whose ships may be reset.
@@ -616,7 +616,8 @@ If no valid position exists, keep the ship in its original position.
 
 
 class BattleshipGame:
-    """Represents a battleship game between two players.
+    """
+    Represents a battleship game between two players.
     
     Attributes:
         player1 (Player): the first player.
@@ -636,7 +637,8 @@ class BattleshipGame:
         self.player2.setup()
 
     def play_turn(self, player):
-        """Executes a single turn for a player, allowing them to move ships.
+        """
+        Executes a single turn for a player, allowing them to move ships.
         
         Parameters: 
             player (Player): the player whose turn is being executed.
