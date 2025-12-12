@@ -127,10 +127,8 @@ def display_board(board=None, used_space=None, hit_cells=None, reveal_ships=Fals
         for c in range(size):
             coord = (r, c)
 
-            # If showing setup board and reveal_ships is True
             if reveal_ships and board and (coord in board.ship1 or coord in board.ship2):
                 row_display.append("S")
-            # If normal game board, show hits/misses
             elif hit_cells and coord in hit_cells:
                 row_display.append("H")
             elif used_space and coord in used_space:
