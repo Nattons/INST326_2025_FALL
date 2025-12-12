@@ -72,18 +72,9 @@ def parse_input_to_coord(input_str):
 
 def in_bounds(coord, size=BOARD_SIZE):
     """
-    Check if a coordinate is on the board.
-
-    Parameters:
-    - coord: (row, column) tuple
-    - size: board size (default BOARD_SIZE)
-
-    Returns:
-    - True if inside the board, False otherwise
    
     Primary Author: Jishan Farazi
     Techniques Demonstrated:
-        - Sequence unpacking
         - Conditional expression
         
     """
@@ -164,19 +155,9 @@ def check_special_cells(coord, board):
 def display_board(board=None, used_space=None, hit_cells=None, reveal_ships=False):
     """
     Displays the board for visual.
-    
-    Parameters:
-    - board: Board object (required if reveal_ships=True)
-    - used_space: set of fired coordinates
-    - hit_cells: set of hits
-    - reveal_ships: if True, shows ships on the board (for setup)
-   
     Primary Author: Jishan Farazi
     Techniques Demonstrated: 
-        - Loops: iterate through rows and columns to build the board display
-        - Conditionals: determine which symbol to display for each cell
-        - String formatting and join: create readable board output
-    
+        - keyword arguments
     """
     size = board.size if board else BOARD_SIZE
     print("\n  " + " ".join(str(c) for c in range(size)))  
@@ -405,11 +386,6 @@ class Player:
         Primary Author: Jishan Farazi
         Techniques Used:
             - f-strings containing expressions
-
-        This method shows the empty board, then asks the player
-        to place Ship 1 and Ship 2 by hand. After that, it puts mines
-        and a lucky cell on the board. Finally, it prints messages
-        showing that the setup is done.
         """
         print(f"\n{self.name} Setup")
 
@@ -636,15 +612,7 @@ Def main():
 
     Primary Author: Jishan Farazi
     Techniques Demonstrated: 
-        - f-strings containing expressions
-        - set operations: tracking used and hit coordinates with sets
-        - Loops for the game play
-
-    This function initializes the Battleship game, manages turn order,
-    processes player actions (movement, firing, scoring), checks special
-    grid effects, prevents movement of ships after they are hit, updates
-    the display board, and ends the game when all enemy ships are sunk
-    or the user chooses to quit.
+        - composition of two custom classes
     """
 
     game = BattleshipGame()
