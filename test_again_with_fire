@@ -307,7 +307,18 @@ class Player:
         self.score = 0
 
     def setup(self):
+        """
+        Lets the player place their ships and special cells on the board.
 
+        Primary Author: Jishan Farazi
+        Techniques Used:
+            - f-strings containing expressions
+
+        This method shows the empty board, then asks the player
+        to place Ship 1 and Ship 2 by hand. After that, it puts mines
+        and a lucky cell on the board. Finally, it prints messages
+        showing that the setup is done.
+        """
         print(f"\n{self.name} Setup")
 
         print("\nInitial empty board:")
@@ -503,7 +514,20 @@ class BattleshipGame:
 
 
 Def main():
-    """Runs the Battleship game in the terminal."""
+    """
+    Runs the Battleship game in the terminal.
+
+    Primary Author: Jishan Farazi
+    Techniques Demonstrated: 
+        - f-strings containing expressions
+        - set operations (tracking used and hit coordinates with sets)
+
+    This function initializes the Battleship game, manages turn order,
+    processes player actions (movement, firing, scoring), checks special
+    grid effects, prevents movement of ships after they are hit, updates
+    the display board, and ends the game when all enemy ships are sunk
+    or the user chooses to quit.
+    """
 
     game = BattleshipGame()
     game.setup_game()
