@@ -166,6 +166,14 @@ def display_board(board=None, used_space=None, hit_cells=None, reveal_ships=Fals
     Primary Author: Jishan Farazi
     Techniques Demonstrated: 
         - keyword arguments
+
+    Parameters:
+    - board: Board object containing ship positions 
+    - used_space: set of coordinates that have been fired at 
+    - hit_cells: set of coordinates that were hit 
+    - reveal_ships: boolean that shows ships if True 
+
+
     """
     size = board.size if board else BOARD_SIZE
     print("\n  " + " ".join(str(c) for c in range(size)))  
