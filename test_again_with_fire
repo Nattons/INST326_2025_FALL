@@ -606,7 +606,7 @@ class BattleshipGame:
                     break
 
 
-Def main():
+def main():
     """
     Runs the Battleship game in the terminal.
 
