@@ -5,25 +5,33 @@ BOARD_SIZE = 5
 
 def validate_ship_position(coord, board):
     """
-    Ensures the player cannot place or move a ship:
-    - outside the board
-    - on top of another ship
-    - onto a previously hit cell
+    Ensure that the ship position is valid
+    Expactation:
+    1.Inside the board boundaries
+    2.Doesn't ver lap another ship
+    3.Can't place ship on fired cell
+
+    Args:
+        coord (tuple): A row and col coordinate to validate.
+        board (Board): The board object containing ship positions and hit records.
+    Returns:
+        bool: True if the position is valid, False otherwise.
+    
     """
 
     row, col = coord
 
-    # 1. Check bounds
+    #Check for bounds
     if row < 0 or row >= board.size or col < 0 or col >= board.size:
         print("Invalid: position is outside the board.")
         return False
 
-    # 2. Check if space is already occupied by another ship
+    #Check if the space is already occupied by another ship
     if coord in board.ship1 or coord in board.ship2:
         print("Invalid: position already has a ship.")
         return False
 
-    # 3. Check if the opponent already fired on this location
+    # Check if the opponent already fired on this cell location
     # (prevents moving onto a revealed space)
     if hasattr(board, "hits_against_you") and coord in board.hits_against_you:
         print("Invalid: your ship cannot move into a space already fired upon.")
@@ -33,6 +41,23 @@ def validate_ship_position(coord, board):
 
 
 def parse_input_to_coord(input_str):
+    """
+    Turn user input into a coordinate tuple
+    Input accepted
+    ex.
+    1,2 (With comma)
+    1 2 (With space)
+
+    The function return none if it the input is not valid 
+    or can't be converted to integers
+
+    Args:
+        input_str (str): The user input a string
+
+    Returns:
+        tuple or None: A row and col tuple if valid, otherwise None.
+        
+    """
     input_str = input_str.replace(",", " ")
     parts = input_str.split()
     if len(parts) != 2:
@@ -98,7 +123,17 @@ def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
 
 def check_special_cells(coord, board):
     """
-    Checks whether the coordinate is a mine or the lucky cell.
+    Checks whether the coordinate is a mine or the lucky cell
+
+    Args:
+        coord (tuple): The row and col coordinate that was fired on.
+        board (Board): The board object that is containing mines and the lucky cell.
+
+    Returns:
+        str: 
+            "mine" if the cell is a sea mine
+            "lucky" if it is the lucky cell
+            "none" if it is a normal cell
     """
     if coord in board.mines:
         return "mine"
@@ -345,6 +380,13 @@ class Player:
 def all_ships_sunk(enemy_ships, hit_cells):
     """
     Returns True if all ships have been sunk.
+
+    Args:
+        enemy_ships (list): A list of enemy ships and where each ship is a list of coordinates.
+        hit_cells (set): A set of coordinates that have been hit.
+
+    Returns:
+        bool: True if all ships are sunk, False otherwise.
     """
     return all(all(cell in hit_cells for cell in ship) for ship in enemy_ships)
 
@@ -517,7 +559,8 @@ if __name__ == "__main__":
             print("You hit the lucky grid! Their ships position will be reset!")
 
         if all_ships_sunk(enemy_ships, hit_cells):
-            print(f"{current_player.name} WINS!!! All enemy ships have been destroyed.")
+            print(f"{current_player.name} is the Winner!!!!")
+            print(f"All enemy ships have been successfully destroyed.")
             break
 
         cont = input("Continue game? (y/n): ").strip().lower()
