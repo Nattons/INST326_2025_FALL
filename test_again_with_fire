@@ -563,8 +563,8 @@ Def main():
             print(f"All enemy ships have been successfully destroyed.")
             break
 
-        cont = input("Continue game? (Press any key to continue or 'n' to quit): ").strip().lower()
-        if cont == 'n':
+        cont = input("Continue game? (Type any letter to continue or 'quit' to quit): ").strip().lower()
+        if cont == 'quit':
             print("Game Exited.")
             break
 
