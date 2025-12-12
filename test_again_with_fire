@@ -144,9 +144,9 @@ def check_special_cells(coord, board):
             "none" if it is a normal cell
     """
     if coord in board.mines:
-        return "mine"
+        return f"{'mine'}"
     if board.lucky == coord:
-        return "lucky"
+        return f"{'lucky'}"
     return "none"
 
 
