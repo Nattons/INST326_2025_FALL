@@ -527,7 +527,8 @@ Def main():
     Primary Author: Jishan Farazi
     Techniques Demonstrated: 
         - f-strings containing expressions
-        - set operations (tracking used and hit coordinates with sets)
+        - set operations: tracking used and hit coordinates with sets
+        - Loops for the game play
 
     This function initializes the Battleship game, manages turn order,
     processes player actions (movement, firing, scoring), checks special
