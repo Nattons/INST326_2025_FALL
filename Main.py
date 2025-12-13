@@ -2,6 +2,7 @@ import random
 
 BOARD_SIZE = 5
 
+import re
 
 def validate_ship_position(coord, board):
     """    
