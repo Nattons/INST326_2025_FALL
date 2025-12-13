@@ -4,7 +4,10 @@ BOARD_SIZE = 5
 
 
 def validate_ship_position(coord, board, check_fired=True):
-    """
+    """    
+    Primary Author: Endrias Alamerew
+    Techniques Demonstrated: Optional parameter
+
     Ensure that the ship position is valid
     Expectation:
     1. Inside the board boundaries
@@ -20,7 +23,7 @@ def validate_ship_position(coord, board, check_fired=True):
     Returns:
         bool: True if the position is valid, False otherwise.
 
-    Primary Author: Endrias Alamerew
+    
     """
 
     row, col = coord
@@ -161,6 +164,9 @@ def fire(used_space, hit_cells, enemy_ships, board_size=BOARD_SIZE):
 
 def check_special_cells(coord, board):
     """
+    Primary Author: Endrias Alamerew
+    Techniques Demonstrated: f-strings containing expressions
+        
     Checks whether the coordinate is a mine or the lucky cell
 
     Args:
@@ -173,7 +179,7 @@ def check_special_cells(coord, board):
             "lucky" if it is the lucky cell
             "none" if it is a normal cell
 
-    Primary Author: Endrias Alamerew
+    
     """
     if coord in board.mines:
         return f"{'mine'}"
