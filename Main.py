@@ -3,28 +3,30 @@ import random
 BOARD_SIZE = 5
 
 
-def validate_ship_position(coord, board, check_fired=True):
+def validate_ship_position(coord, board):
     """    
     Primary Author: Endrias Alamerew
-    Techniques Demonstrated: Optional parameter
+    Techniques Demonstrated: Regular expressions
 
     Ensure that the ship position is valid
     Expectation:
     1. Inside the board boundaries
     2. Doesn't overlap another ship
-    3. Can't place ship on fired cell (optional)
+    3. Can't place ship on fired cell
 
     Args:
         coord (tuple): A row and col coordinate to validate.
         board (Board): The board object containing ship positions and hit records.
-        check_fired (bool): Whether to block placement on fired cells.
-                                     Defaulted to True(Optional)
 
     Returns:
         bool: True if the position is valid, False otherwise.
-
-    
     """
+
+    # Ensure coord matches the format (number, number)
+    coord_str = str(coord)
+    if not re.fullmatch(r"\(\d+,\s*\d+\)", coord_str):
+        print("Invalid: coordinate format is incorrect.")
+        return False
 
     row, col = coord
 
@@ -38,13 +40,12 @@ def validate_ship_position(coord, board, check_fired=True):
         print("Invalid: position already has a ship.")
         return False
 
-    # Optional check: fired cells
-    if check_fired and hasattr(board, "hits_against_you") and coord in board.hits_against_you:
+    # Check if the opponent already fired on this cell
+    if hasattr(board, "hits_against_you") and coord in board.hits_against_you:
         print("Invalid: your ship cannot move into a space already fired upon.")
         return False
 
     return True
-
 
 def parse_input_to_coord(input_str):
     """
